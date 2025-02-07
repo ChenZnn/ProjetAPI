@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion des Messages</title>
+    <style> 
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        form {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input, textarea, button {
+            margin-bottom: 10px;
+            padding: 8px;
+            width: 100%;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f4f4f4;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Gestion des Messages</h1>
+
+    <!-- Formulaire pour ajouter un message -->
+    <h2>Ajouter un message</h2>
+    <form id="addMessageForm">
+        <label for="contenu">Contenu</label>
+        <textarea id="contenu" name="contenu" rows="4" required></textarea>
+
+        <label for="dateEnvoi">Date d'envoi</label>
+        <input type="datetime-local" id="dateEnvoi" name="dateEnvoi" required>
+
+        <label for="idConversation">ID de la Conversation</label>
+        <input type="number" id="idConversation" name="idConversation" required>
+
+        <button type="submit">Ajouter le message</button>
+    </form>
+
+    <!-- Liste des messages -->
+    <h2>Liste des messages</h2>
+    <button id="refreshMessages">Rafraîchir la liste</button>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Contenu</th>
+                <th>Date d'envoi</th>
+                <th>ID Conversation</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="messagesTableBody">
+            <!-- Les messages seront insérés ici -->
+        </tbody>
+    </table>
+
+    <h2>Rechercher un message</h2>
+        <form id="getMessageForm">
+            <label for="messageId">ID du message</label>
+            <input type="number" id="messageId" name="messageId" required>
+            <button type="submit">Rechercher</button>
+        </form>
+        <div id="messageDetails"></div>
+
+        <h2>Mettre à jour un message</h2>
+        <form id="updateMessageForm">
+            <label for="updateId">ID du message</label>
+            <input type="number" id="updateId" name="updateId" required>
+        
+            <label for="updateContenu">Nouveau contenu</label>
+            <textarea id="updateContenu" name="updateContenu" rows="4"></textarea>
+        
+            <label for="updateDateEnvoi">Nouvelle date d'envoi</label>
+            <input type="datetime-local" id="updateDateEnvoi" name="updateDateEnvoi">
+        
+            <label for="updateIdConversation">Nouvel ID de conversation</label>
+            <input type="number" id="updateIdConversation" name="updateIdConversation">
+        
+            <button type="submit">Mettre à jour</button>
+        </form>
+        
+    <script>
+        const apiUrl = 'http://localhost:3000/api/messages';
+
+        // Ajouter un message
+        document.getElementById('addMessageForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            const data = {
+                Contenu: document.getElementById('contenu').value,
+                Date_Envoi: document.getElementById('dateEnvoi').value,
+                idConversation: document.getElementById('idConversation').value
+            };
+
+            fetch(apiUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(result => {
+                alert('Message ajouté avec succès!');
+                document.getElementById('addMessageForm').reset();
+                loadMessages();
+            })
+            .catch(error => alert('Erreur lors de l\'ajout du message: ' + error));
+        });
+
+        // Charger les messages
+        function loadMessages() {
+            fetch(apiUrl)
+                .then(response => response.json())
+                .then(messages => {
+                    const tableBody = document.getElementById('messagesTableBody');
+                    tableBody.innerHTML = ''; // Vider le tableau avant de le remplir
+
+                    messages.forEach(message => {
+                        const row = document.createElement('tr');
+
+                        row.innerHTML = `
+                            <td>${message.idMessage}</td>
+                            <td>${message.Contenu}</td>
+                            <td>${message.Date_Envoi}</td>
+                            <td>${message.idConversation}</td>
+                            <td>
+                                <button onclick="deleteMessage(${message.idMessage})">Supprimer</button>
+                            </td>
+                        `;
+
+                        tableBody.appendChild(row);
+                    });
+                })
+                .catch(error => alert('Erreur lors du chargement des messages: ' + error));
+        }
+
+        // Supprimer un message
+        function deleteMessage(id) {
+            if (!confirm('Êtes-vous sûr de vouloir supprimer ce message ?')) return;
+
+            fetch(`${apiUrl}/${id}`, {
+                method: 'DELETE'
+            })
+            .then(response => response.json())
+            .then(result => {
+                alert('Message supprimé avec succès!');
+                loadMessages();
+            })
+            .catch(error => alert('Erreur lors de la suppression du message: ' + error));
+        }
+
+        // Rafraîchir les messages au clic du bouton
+        document.getElementById('refreshMessages').addEventListener('click', loadMessages);
+
+        // Charger les messages au chargement de la page
+        window.onload = loadMessages;
+
+        document.getElementById('getMessageForm').addEventListener('submit', function (event) {
+    event.preventDefault();
+
+    const id = document.getElementById('messageId').value;
+
+    fetch(`${apiUrl}/${id}`)
+        .then(response => response.json())
+        .then(message => {
+            if (message.message) {
+                document.getElementById('messageDetails').innerText = message.message;
+            } else {
+                document.getElementById('messageDetails').innerHTML = `
+                    <p><strong>ID:</strong> ${message.idMessage}</p>
+                    <p><strong>Contenu:</strong> ${message.Contenu}</p>
+                    <p><strong>Date d'envoi:</strong> ${message.Date_Envoi}</p>
+                    <p><strong>ID Conversation:</strong> ${message.idConversation}</p>
+                `;
+            }
+        })
+        .catch(error => alert('Erreur lors de la récupération du message: ' + error));
+});
+
+document.getElementById('updateMessageForm').addEventListener('submit', function (event) {
+    event.preventDefault();
+
+    const id = document.getElementById('updateId').value;
+    const data = {
+        Contenu: document.getElementById('updateContenu').value,
+        Date_Envoi: document.getElementById('updateDateEnvoi').value,
+        idConversation: document.getElementById('updateIdConversation').value
+    };
+
+    fetch(`${apiUrl}/${id}`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+    })
+        .then(response => response.json())
+        .then(result => {
+            alert(result.message);
+            document.getElementById('updateMessageForm').reset();
+            loadMessages();
+        })
+        .catch(error => alert('Erreur lors de la mise à jour du message: ' + error));
+});
+
+    </script>
+
+</body>
+</html>

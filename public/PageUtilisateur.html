@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inscription et Connexion</title>
+</head>
+<body>
+
+    <h1>Inscription et Connexion</h1>
+
+    <!-- Formulaire pour l'inscription -->
+    <h2>Inscription</h2>
+    <form id="registerForm">
+        <label for="username">Nom d'utilisateur</label>
+        <input type="text" id="username" name="username" required><br>
+
+        <label for="password">Mot de passe</label>
+        <input type="password" id="password" name="password" required><br>
+
+        <label for="nom">Nom</label>
+        <input type="text" id="nom" name="nom" required><br>
+
+        <label for="prenom">Prénom</label>
+        <input type="text" id="prenom" name="prenom" required><br>
+
+        <button type="submit">S'inscrire</button>
+    </form>
+
+    <div id="registerMessage"></div>
+
+    <!-- Formulaire pour la connexion -->
+    <h2>Connexion</h2>
+    <form id="loginForm">
+        <label for="loginUsername">Nom d'utilisateur</label>
+        <input type="text" id="loginUsername" name="username" required><br>
+
+        <label for="loginPassword">Mot de passe</label>
+        <input type="password" id="loginPassword" name="password" required><br>
+
+        <button type="submit">Se connecter</button>
+    </form>
+
+    <div id="loginMessage"></div>
+
+    <script>
+        // Inscription d'un utilisateur
+        document.getElementById('registerForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const data = {
+                username: document.getElementById('username').value,
+                password: document.getElementById('password').value,
+                nom: document.getElementById('nom').value,
+                prenom: document.getElementById('prenom').value
+            };
+
+            fetch('http://localhost:3000/api/users/register', {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(data)
+})
+            .then(response => response.json())
+            .then(result => {
+                if (result.message) {
+                    document.getElementById('registerMessage').innerText = result.message;
+                }
+            })
+            .catch(error => {
+                document.getElementById('registerMessage').innerText = 'Erreur lors de l\'inscription: ' + error;
+            });
+            console.log('Données envoyées :', data);
+        });
+
+        // Connexion d'un utilisateur
+        document.getElementById('loginForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const data = {
+                username: document.getElementById('loginUsername').value,
+                password: document.getElementById('loginPassword').value
+            };
+            console.log(data);
+
+            fetch('http://localhost:3000/api/users/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.token) {
+                    localStorage.setItem('token', result.token); // Sauvegarder le token JWT
+                    document.getElementById('loginMessage').innerText = 'Connexion réussie!';
+                    window.location.href = '/add-jeu'; // Rediriger vers la page addJeu après connexion
+                } else {
+                    document.getElementById('loginMessage').innerText = result.message || 'Erreur lors de la connexion.';
+                }
+            })
+            .catch(error => {
+                document.getElementById('loginMessage').innerText = 'Erreur lors de la connexion: ' + error;
+            });
+        });
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Créer un Jeu</title>
+</head>
+<body>
+    <h1>Créer un Jeu</h1>
+    <form id="addJeuForm">
+        <label for="nom">Nom du jeu :</label>
+        <input type="text" id="nom" name="nom" required>
+        <br>
+        <label for="description">Description :</label>
+        <textarea id="description" name="description" required></textarea>
+        <br>
+        <button type="submit">Ajouter le jeu</button>
+    </form>
+
+    <div id="message"></div>
+    <div id="generatedImageContainer" style="margin-top: 20px;"></div>
+
+    <script>
+        const aiApiUrl = "http://localhost:3000/api/ai/generate-image"; // L'URL de l'API IA
+        const form = document.getElementById('addJeuForm');
+        const messageDiv = document.getElementById('message');
+        const imageContainer = document.getElementById('generatedImageContainer');
+
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault();
+
+            const data = {
+                nom: document.getElementById('nom').value,
+                description: document.getElementById('description').value,
+                source: 'replicate',  // Utilisation de Replicate pour la génération de l'image
+            };
+
+            try {
+                const token = localStorage.getItem('token'); // Récupération du token JWT
+                const response = await fetch(aiApiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`, // Inclusion du token
+                    },
+                    body: JSON.stringify(data),
+                });
+
+                const result = await response.json();
+                if (response.ok) {
+                    messageDiv.textContent = 'Jeu créé avec succès !';
+                    form.reset();
+
+                    // Appelle l'API pour générer l'image via Replicate
+                    await generateImage(data.nom, data.description);
+                } else {
+                    messageDiv.textContent = `Erreur : ${result.message}`;
+                }
+            } catch (error) {
+                console.error('Erreur lors de la création du jeu :', error);
+                messageDiv.textContent = 'Erreur lors de la création du jeu.';
+            }
+        });
+
+        async function generateImage(nom, description) {
+            try {
+                const response = await fetch('http://localhost:3000/api/ai/generate-image', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        nom,
+                        description,
+                        source: 'replicate',  // Utilisation de Replicate
+                    }),
+                });
+
+                const result = await response.json();
+                if (response.ok) {
+                    // Afficher l'image générée
+                    const img = document.createElement('img');
+                    img.src = result.imageUrl;
+                    img.alt = `Image générée pour le jeu ${nom}`;
+                    img.style.maxWidth = '100%';
+
+                    imageContainer.innerHTML = ''; // Nettoyer le conteneur avant d'ajouter l'image
+                    imageContainer.appendChild(img);
+                } else {
+                    messageDiv.textContent = `Erreur lors de la génération de l'image : ${result.message}`;
+                }
+            } catch (error) {
+                console.error('Erreur lors de la génération de l\'image :', error);
+                messageDiv.textContent = 'Erreur lors de la génération de l\'image.';
+            }
+        }
+    </script>
+    
+</body>
+</html>

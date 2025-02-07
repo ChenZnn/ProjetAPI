@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tableau de Bord Utilisateur</title>
+</head>
+<body>
+
+    <h1>Tableau de bord Utilisateur</h1>
+
+    <!-- Afficher tous les utilisateurs -->
+    <h2>Tous les Utilisateurs</h2>
+    <button id="getAllUsersBtn">Récupérer tous les utilisateurs</button>
+    <div id="allUsers"></div>
+
+    <!-- Afficher un utilisateur spécifique -->
+    <h2>Récupérer un Utilisateur</h2>
+    <form id="getUserForm">
+        <label for="getUserId">ID de l'utilisateur :</label>
+        <input type="number" id="getUserId" required>
+        <button type="submit">Afficher l'utilisateur</button>
+    </form>
+    <div id="userDetails"></div>
+
+    <!-- Mettre à jour un utilisateur -->
+    <h2>Mettre à Jour un Utilisateur</h2>
+    <form id="updateUserForm">
+        <label for="updateUserId">ID de l'utilisateur :</label>
+        <input type="number" id="updateUserId" required><br>
+        <label for="updateUsername">Nom d'utilisateur :</label>
+        <input type="text" id="updateUsername"><br>
+        <label for="updatePassword">Mot de passe :</label>
+        <input type="password" id="updatePassword"><br>
+        <label for="updateNom">Nom :</label>
+        <input type="text" id="updateNom"><br>
+        <label for="updatePrenom">Prénom :</label>
+        <input type="text" id="updatePrenom"><br>
+        <button type="submit">Mettre à jour l'utilisateur</button>
+    </form>
+
+    <!-- Supprimer un utilisateur -->
+    <h2>Supprimer un Utilisateur</h2>
+    <form id="deleteUserForm">
+        <label for="deleteUserId">ID de l'utilisateur :</label>
+        <input type="number" id="deleteUserId" required><br>
+        <button type="submit">Supprimer l'utilisateur</button>
+    </form>
+
+    <script>
+        const token = localStorage.getItem('token');
+        const headers = {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        };
+
+        // Récupérer tous les utilisateurs
+        document.getElementById('getAllUsersBtn').addEventListener('click', function() {
+            fetch('http://localhost:3000/api/users', { headers })
+                .then(response => response.json())
+                .then(users => {
+                    const userList = users.map(user => `<p>${user.Username} - ${user.Nom} - ${user.Prenom} - (ID: ${user.idUser})</p>`).join('');
+                    document.getElementById('allUsers').innerHTML = userList || 'Aucun utilisateur trouvé';
+                })
+                .catch(error => console.error('Erreur:', error));
+        });
+
+        // Récupérer un utilisateur spécifique
+        document.getElementById('getUserForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const userId = document.getElementById('getUserId').value;
+            fetch(`http://localhost:3000/api/users/${userId}`, { headers })
+                .then(response => response.json())
+                .then(user => {
+                    if (user) {
+                        document.getElementById('userDetails').innerHTML = `
+                            <p>ID: ${user.idUser}</p>
+                            <p>Nom: ${user.Nom}</p>
+                            <p>Prénom: ${user.Prenom}</p>
+                            <p>Nom d'utilisateur: ${user.Username}</p>
+                        `;
+                    } else {
+                        document.getElementById('userDetails').innerHTML = 'Utilisateur non trouvé.';
+                    }
+                })
+                .catch(error => console.error('Erreur:', error));
+        });
+
+        // Mettre à jour un utilisateur
+        document.getElementById('updateUserForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const userId = document.getElementById('updateUserId').value;
+            const data = {
+                username: document.getElementById('updateUsername').value,
+                password: document.getElementById('updatePassword').value,
+                nom: document.getElementById('updateNom').value,
+                prenom: document.getElementById('updatePrenom').value
+            };
+            console.log(data);
+            fetch(`http://localhost:3000/api/users/${userId}`, {
+                method: 'PUT',
+                headers,
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(result => {
+                alert(result.message || 'Utilisateur mis à jour avec succès');
+            })
+            .catch(error => console.error('Erreur:', error));
+        });
+
+        // Supprimer un utilisateur
+        document.getElementById('deleteUserForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const userId = document.getElementById('deleteUserId').value;
+            fetch(`http://localhost:3000/api/users/${userId}`, {
+                method: 'DELETE',
+                headers
+            })
+            .then(response => response.json())
+            .then(result => {
+                alert(result.message || 'Utilisateur supprimé avec succès');
+            })
+            .catch(error => console.error('Erreur:', error));
+        });
+    </script>
+
+</body>
+</html>

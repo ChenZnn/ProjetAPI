@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion des Personnages</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        form {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin: 5px 0;
+        }
+        input, button {
+            margin: 5px 0;
+        }
+        .result {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Gestion des Personnages</h1>
+
+    <!-- Formulaire pour ajouter un personnage -->
+    <h2>Ajouter un Personnage</h2>
+    <form id="addPersonnageForm">
+        <label for="nom">Nom :</label>
+        <input type="text" id="nom" required>
+
+        <label for="photo">Photo (URL) :</label>
+        <input type="text" id="photo" required>
+
+        <label for="idJeu">ID Jeu :</label>
+        <input type="number" id="idJeu" required>
+
+        <button type="submit">Ajouter</button>
+    </form>
+
+    <!-- Formulaire pour afficher un personnage spécifique -->
+    <h2>Afficher un Personnage</h2>
+    <form id="getPersonnageForm">
+        <label for="personnageId">ID du Personnage :</label>
+        <input type="number" id="personnageId" required>
+
+        <button type="submit">Afficher</button>
+    </form>
+
+    <!-- Section pour afficher tous les personnages -->
+    <h2>Tous les Personnages</h2>
+    <button id="getAllPersonnagesButton">Afficher Tous les Personnages</button>
+    <div class="result" id="allPersonnagesResult"></div>
+
+    <!-- Formulaire pour mettre à jour un personnage -->
+    <h2>Mettre à Jour un Personnage</h2>
+    <form id="updatePersonnageForm">
+        <label for="updateId">ID du Personnage :</label>
+        <input type="number" id="updateId" required>
+
+        <label for="updateNom">Nom :</label>
+        <input type="text" id="updateNom">
+
+        <label for="updatePhoto">Photo (URL) :</label>
+        <input type="text" id="updatePhoto">
+
+        <label for="updateIdJeu">ID Jeu :</label>
+        <input type="number" id="updateIdJeu">
+
+        <button type="submit">Mettre à Jour</button>
+    </form>
+
+    <!-- Formulaire pour supprimer un personnage -->
+    <h2>Supprimer un Personnage</h2>
+    <form id="deletePersonnageForm">
+        <label for="deleteId">ID du Personnage :</label>
+        <input type="number" id="deleteId" required>
+
+        <button type="submit">Supprimer</button>
+    </form>
+
+    <script>
+        const apiUrl = "http://localhost:3000/api/personnages";
+
+        // Ajouter un personnage
+        document.getElementById('addPersonnageForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const data = {
+                Nom: document.getElementById('nom').value,
+                Photo: document.getElementById('photo').value,
+                idJeu: document.getElementById('idJeu').value,
+            };
+            try {
+                const response = await fetch(apiUrl, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(data),
+                });
+                const result = await response.json();
+                alert(result.message || "Personnage ajouté !");
+            } catch (error) {
+                alert("Erreur : " + error.message);
+            }
+        });
+
+        // Récupérer un personnage spécifique
+        document.getElementById('getPersonnageForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const id = document.getElementById('personnageId').value;
+            try {
+                const response = await fetch(`${apiUrl}/${id}`);
+                const result = await response.json();
+                alert(JSON.stringify(result, null, 2));
+            } catch (error) {
+                alert("Erreur : " + error.message);
+            }
+        });
+
+        // Récupérer tous les personnages
+        document.getElementById('getAllPersonnagesButton').addEventListener('click', async function() {
+            try {
+                const response = await fetch(apiUrl);
+                const result = await response.json();
+                const output = result.map(pers => `<p>${JSON.stringify(pers)}</p>`).join("");
+                document.getElementById('allPersonnagesResult').innerHTML = output;
+            } catch (error) {
+                alert("Erreur : " + error.message);
+            }
+        });
+
+        // Mettre à jour un personnage
+        document.getElementById('updatePersonnageForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const id = document.getElementById('updateId').value;
+            const data = {
+                Nom: document.getElementById('updateNom').value,
+                Photo: document.getElementById('updatePhoto').value,
+                idJeu: document.getElementById('updateIdJeu').value,
+            };
+            try {
+                const response = await fetch(`${apiUrl}/${id}`, {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(data),
+                });
+                const result = await response.json();
+                alert(result.message || "Personnage mis à jour !");
+            } catch (error) {
+                alert("Erreur : " + error.message);
+            }
+        });
+
+        // Supprimer un personnage
+        document.getElementById('deletePersonnageForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const id = document.getElementById('deleteId').value;
+            try {
+                const response = await fetch(`${apiUrl}/${id}`, {
+                    method: "DELETE",
+                });
+                const result = await response.json();
+                alert(result.message || "Personnage supprimé !");
+            } catch (error) {
+                alert("Erreur : " + error.message);
+            }
+        });
+    </script>
+</body>
+</html>

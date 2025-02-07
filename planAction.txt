@@ -1,0 +1,41 @@
+Utilisateurs (users)
+    [POST /users :] Créer un utilisateur. //////////////
+    [GET /users :] Récupérer tous les utilisateurs. ///////////
+    [GET /users/:id :] Récupérer un utilisateur spécifique. ////////////
+    [PUT /users/:id :] Mettre à jour un utilisateur. ///////////////
+    [DELETE /users/:id :] Supprimer un utilisateur. ///////////////
+    [POST /auth/login :] Authentification de l'utilisateur. ////////////////
+    [POST /auth/register :] Inscription d'un utilisateur. ///////////////////
+
+Messages (message)
+    [POST /message :] Créer un message. ////////////
+    [GET /message :] Récupérer tous les message. //////////////
+    [GET /message/:id :] Récupérer un message spécifique. ////////////
+    [PUT /message/:id :] Mettre à jour un message. //////////////////
+    [DELETE /message/:id :] Supprimer un message. ///////////////////////:
+
+    
+Jeux Vidéo (univers)
+    [POST /games :] Ajouter un nouveau jeu vidéo. ////////////
+    [GET /games :] Récupérer tous les jeux. ///////////
+    [GET /games/:id :] Récupérer un jeu spécifique. ///////////
+    [PUT /games/:id :] Mettre à jour un jeu vidéo. ///////////
+    [DELETE /games/:id :] Supprimer un jeu vidéo. /////////
+
+Personnages (Character)
+    [POST /characters :] Ajouter un nouveau personnage. /////////
+    [GET /characters :] Récupérer tous les personnages. ///////////
+    [GET /characters/:id :] Récupérer un personnage spécifique. ////////////
+    [PUT /characters/:id :] Mettre à jour un personnage. ////////////:
+    [DELETE /characters/:id :] Supprimer un personnage. ////////////
+
+Conversations (Conversation)
+    [POST /conversations :] Créer une nouvelle conversation. ///////////
+    [GET /conversations :] Récupérer toutes les conversations. ///////////
+    [GET /conversations/:id :] Récupérer une conversation spécifique. /////////
+    [PUT /conversations/:id :] Mettre à jour une conversation. ////////////
+    [DELETE /conversations/:id :] Supprimer une conversation. ///////////// 
+
+Intégration avec OpenAI
+    [POST /openai/prompt :] Générer une description pour un Jeu ou un personnage.
+    [POST /openai/message :] Envoyer un message dans une conversation pour générer une réponse.
